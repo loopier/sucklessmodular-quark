@@ -98,6 +98,10 @@ Suckless {
 		"Done".postln;
 	}
 
+	*addModuleDef { |name, def|
+		moduledefs.put(name.asSymbol, def);
+	}
+
 	*moduleDefNames {
 		^moduledefs.keys.asSortedList;
 	}

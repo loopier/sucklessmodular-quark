@@ -1,0 +1,41 @@
+TITLE:: Suckless
+summary:: live coding language helper
+categories:: Live Coding
+related:: Classes/Suckless
+
+DESCRIPTION::
+A class providing methods to simplify live coding modular synthesis.
+
+CLASSMETHODS::
+
+METHOD:: boot
+Boot the server and initialize the language.
+
+argument::scopeStyle
+Style of the scope window.  See Scope class.
+
+argument::server
+Server to boot.  Defaults to Server.default.
+
+METHOD:: start
+Initialize the language.
+
+METHOD:: initModuleDefs
+Initizializes a dictionary with all the synth definitions for the modules.
+
+METHOD:: addModuleDef
+Adds a module definitions.
+
+argument::name
+name of the module template as Symbol.
+
+argument::def
+function definition of the module (SynthDef function).
+
+INSTANCEMETHODS::
+
+EXAMPLES::
+
+code::
+//
+::
