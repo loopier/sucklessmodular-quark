@@ -32,6 +32,40 @@ name of the module template as Symbol.
 argument::def
 function definition of the module (SynthDef function).
 
+METHOD:: moduleDefNames
+returns tha list of available module templates.
+
+returns::
+An Array of strings.
+
+METHOD:: list
+returns tha list of available module templates.
+
+returns::
+An Array of strings.
+
+
+METHOD:: getModuleDef
+returns the module with the given name.
+
+argument::name
+The name of the module
+
+returns::
+A module function definition.
+
+METHOD:: add
+Creates a module from a template.
+
+argument::name
+The name of the new module.
+
+argument::defname
+The name of the new module template (SynthDef).
+
+returns::
+A NodeProxy
+
 INSTANCEMETHODS::
 
 EXAMPLES::
