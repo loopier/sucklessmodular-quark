@@ -20,39 +20,39 @@ Suckless {
 	*start {
 		Suckless.initModuleDefs();
 		Suckless.moduleDefNames.collect(_.postln);
-		"Suckless: Initializing pre-processor... ".post;
-		thisProcess.interpreter.preProcessor = { |codeBlock|
-			codeBlock.split($\n).collect { |code|
-				var items = code.split($ );
-				items.postln;
-				case
-				{code.beginsWith("add")} {
-					moduledefs.at(items[2].asSymbol).asCompileString.postln;
-					moduledefs.at(items[2].asSymbol).asCompileString;
-					"Ndef(\\"++items[1]++", "++moduledefs.at(items[2].asSymbol).asCompileString++");";
-				}
-				{code.beginsWith("play")} {
-					"Ndef(\\"++items[1]++").play;";
-				}
-				{code.beginsWith("stop")} {
-					"Ndef(\\"++items[1]++").stop;";
-				}
-				{code.beginsWith("clear")} {
-					"Ndef(\\"++items[1]++").clear;";
-				}
-				{true} {
-					var name = items[0];
-					var param = items[1];
-					var value = if ("[a-zA-Z]".matchRegexp(items[2])) {
-						"Ndef(\\"++items[2]++")";
-					} {
-						items[2].asFloat
-					};
-					"Ndef(\\"++name++").set(\\"++param++", "++value++");";
-				};
-			}
-			.join;
-		};
+		// "Suckless: Initializing pre-processor... ".post;
+		// thisProcess.interpreter.preProcessor = { |codeBlock|
+		// 	codeBlock.split($\n).collect { |code|
+		// 		var items = code.split($ );
+		// 		items.postln;
+		// 		case
+		// 		{code.beginsWith("add")} {
+		// 			moduledefs.at(items[2].asSymbol).asCompileString.postln;
+		// 			moduledefs.at(items[2].asSymbol).asCompileString;
+		// 			"Ndef(\\"++items[1]++", "++moduledefs.at(items[2].asSymbol).asCompileString++");";
+		// 		}
+		// 		{code.beginsWith("play")} {
+		// 			"Ndef(\\"++items[1]++").play;";
+		// 		}
+		// 		{code.beginsWith("stop")} {
+		// 			"Ndef(\\"++items[1]++").stop;";
+		// 		}
+		// 		{code.beginsWith("clear")} {
+		// 			"Ndef(\\"++items[1]++").clear;";
+		// 		}
+		// 		{true} {
+		// 			var name = items[0];
+		// 			var param = items[1];
+		// 			var value = if ("[a-zA-Z]".matchRegexp(items[2])) {
+		// 				"Ndef(\\"++items[2]++")";
+		// 			} {
+		// 				items[2].asFloat
+		// 			};
+		// 			"Ndef(\\"++name++").set(\\"++param++", "++value++");";
+		// 		};
+		// 	}
+		// 	.join;
+		// };
 		"Done".postln;
 	}
 
