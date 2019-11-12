@@ -1,5 +1,6 @@
 Suckless {
 	classvar moduledefs;
+	classvar <> modules;
 
 	*boot { arg scopeStyle = 2, server = Server.default;
 		/*server.makeWindow;*/
@@ -99,6 +100,7 @@ Suckless {
 	}
 
 	*addModuleDef { |name, def|
+		"Adding new module def: "++name.postln;
 		moduledefs.put(name.asSymbol, def);
 	}
 
@@ -106,7 +108,24 @@ Suckless {
 		^moduledefs.keys.asSortedList;
 	}
 
+	*list {
+		^Suckless.moduleDefNames.value()
+	}
+
 	*getModuleDef { |name|
 		^moduledefs.at(name.asSymbol);
+	}
+
+	*add { |name, def|
+		if (def.class == Function) {
+			Suckless.addModuleDef(name, def);
+		} {
+			^Suckless.addNodeProxy(name, def);
+		}
+	}
+
+	*addNodeProxy { |name, def|
+		"Adding new module: "++name.postln;
+		^Ndef(name.asSymbol, moduledefs[def]);
 	}
 }
