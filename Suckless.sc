@@ -181,6 +181,8 @@ Suckless {
 	/// \brief Prints the controls of the given module with their connections.
 	///
 	/// \param module           Name of the module
+	///
+	/// \returns Prints a list of inputs with rate, name and value.
 	*controls { |module|
 		"Controls for: "++module.postln;
 		Ndef(module.asSymbol).controlNames.do{ |ctl|
