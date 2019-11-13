@@ -144,10 +144,18 @@ Suckless {
 
 	/// \brief Connect one module's output to another module's input.
 	///
-	/// \param from           The Symbol of a module sending the signal
-	/// \param connection  The the receiving module's input parameter name
-	/// \param to               The Symbol of a module receiving the signal
-	*connect { |from, connection, to|
-		Ndef(to.asSymbol).set(connection.asSymbol, Ndef(from.asSymbol));
+	/// \param from           Name of a module sending the signal
+	/// \param inputname  Name of the input in the receiving module
+	/// \param to               Name of the module receiving the signal
+	*connect { |from, inputname, to|
+		Ndef(to.asSymbol).set(inputname.asSymbol, Ndef(from.asSymbol));
+	}
+
+	/// \brief Disconnect anything that is connected to the given input
+	///
+	/// \param name           Name of the module
+	/// \param connection  Name of the parameter
+	*disconnect { |name, connection|
+		Ndef(name.asSymbol).set(connection.asSymbol, 0);
 	}
 }
