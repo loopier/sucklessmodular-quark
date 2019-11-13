@@ -73,11 +73,12 @@ Suckless {
 		moduledefs.put(\delay, { AllpassC.ar(\in.ar(0), 2, \delaytime.kr(0.2), \decaytime.kr(1), mul:\level.kr(1))});
 		moduledefs.put(\midicps, {\in.kr(60).midicps});
 		moduledefs.put(\out, { \in.ar(0)});
-		moduledefs.put(\outs, { \in.ar(0!2)});
+		moduledefs.put(\outs, { [\left.ar(0), \right.ar(1)]});
 		moduledefs.put(\sine, { SinOsc.ar(\freq.kr(440), mul:\amp.kr(1))});
 		moduledefs.put(\saw, { Saw.ar(\freq.kr(440), mul:\amp.kr(1))});
 		moduledefs.put(\pulse, { Pulse.ar(\freq.kr(440), mul:\amp.kr(1))});
 		moduledefs.put(\whitenoise, { WhiteNoise.ar(\amp.kr(1)) });
+		moduledefs.put(\dust, { Dust.ar(\density.kr(10)) });
 		moduledefs.put(\fm7, {
 			var sig, env;
 			var freq = \freq.kr(440);
@@ -110,19 +111,28 @@ Suckless {
 	}
 
 	*list {
-		^Suckless.moduleDefNames.value()
+		"Module templates: ".postln;
+		Suckless.moduleDefNames.value().collect(_.postln);
 	}
 
 	*getModuleDef { |name|
 		^moduledefs.at(name.asSymbol);
 	}
 
-	*add { |name, def|
-		if (def.class == Function) {
-			Suckless.addModuleDef(name, def);
+	*add { |name, definition|
+		if (definition.class == Function) {
+			Suckless.addModuleDef(name, definition);
 		} {
-			^Suckless.addNodeProxy(name, def);
+			^Suckless.addNodeProxy(name, definition);
 		}
+	}
+
+	/// \brief Creates a new module from the template
+	///
+	/// \param name          Name of the new module
+	/// \param definition    Name of the module template
+	*newModule { |name, definition|
+		^Suckless.addNodeProxy(name, definition);
 	}
 
 	*addNodeProxy { |name, def|
@@ -153,9 +163,33 @@ Suckless {
 
 	/// \brief Disconnect anything that is connected to the given input
 	///
-	/// \param name           Name of the module
+	/// \param module           Name of the module
 	/// \param connection  Name of the parameter
-	*disconnect { |name, connection|
-		Ndef(name.asSymbol).set(connection.asSymbol, 0);
+	*disconnect { |module, inputname|
+		Ndef(module.asSymbol).set(inputname.asSymbol, 0);
+	}
+
+	/// \brief Sets a parameter of a module
+	///
+	/// \param module           Name of the module
+	/// \param param             Name of the parameter
+	/// \param value               Value of the parameter
+	*set { |module, param, value|
+		Ndef(module.asSymbol).set(param.asSymbol, value);
+	}
+
+	/// \brief Prints the controls of the given module with their connections.
+	///
+	/// \param module           Name of the module
+	*controls { |module|
+		"Controls for: "++module.postln;
+		Ndef(module.asSymbol).controlNames.do{ |ctl|
+			var name = ctl.name;
+			var value = ctl.defaultValue;
+			var rate = ctl.rate;
+			// find all characters between single quotes in Ndef('...')
+			if (value.class == Ndef) { value = value.asString.split($')[1] };
+			[rate, name, value].postln;
+		};
 	}
 }
