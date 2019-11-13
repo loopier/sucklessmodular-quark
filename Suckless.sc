@@ -88,7 +88,7 @@ Suckless {
 	}
 
 	*addModuleDef { |name, def|
-		"Adding new module def: "++name.postln;
+		"Adding new module def: %".format(name).postln;
 		moduledefs.put(name.asSymbol, def);
 	}
 
@@ -122,7 +122,7 @@ Suckless {
 	}
 
 	*addNodeProxy { |name, def|
-		"Adding new module: "++name.postln;
+		"New % module as %".format(def, name).postln;
 		^Ndef(name.asSymbol, moduledefs[def]);
 	}
 
@@ -263,18 +263,17 @@ SucklessPreProcessor {
 	}
 
 	*setParam { |items|
-		var module = items[0].asSymbol;
-		var param = if(items[0].split($.).size > 1) {items[1].split($.)[0].asSymbol;};
+		var module = items[0].split($.)[0].asSymbol;
+		var param = if(items[0].split($.).size > 1) {items[0].split($.)[1].asSymbol;};
 		var value = items[1];
-		"set param".postln;
-		Suckless.connect(module, param, value);
-		// Ndef(module).set(param, value);
+		// "set param Ndef(%).set(%, %)".format(module, param, value).postln;
+		Ndef(module).set(param, value);
 	}
 
 	*add { |items|
 		var module = items[0].asSymbol;
 		var def = items[1];
-		"add".postln;
+		// "add % as %".format(module, def).postln;
 		Suckless.add(module, def);
 	}
 }
