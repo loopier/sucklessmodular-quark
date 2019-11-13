@@ -2,6 +2,7 @@ Suckless {
 	classvar moduledefs;
 	classvar <> modules;
 
+	///
 	*boot { arg scopeStyle = 2, server = Server.default;
 		/*server.makeWindow;*/
 		// server.boot;
@@ -127,5 +128,26 @@ Suckless {
 	*addNodeProxy { |name, def|
 		"Adding new module: "++name.postln;
 		^Ndef(name.asSymbol, moduledefs[def]);
+	}
+
+	*play { |name, channel|
+		Ndef(name.asSymbol).play(channel);
+	}
+
+	*stop { |name|
+		Ndef(name.asSymbol).stop;
+	}
+
+	*clear { |name, fadeTime|
+		Ndef(name.asSymbol).clear(fadeTime);
+	}
+
+	/// \brief Connect one module's output to another module's input.
+	///
+	/// \param from           The Symbol of a module sending the signal
+	/// \param connection  The the receiving module's input parameter name
+	/// \param to               The Symbol of a module receiving the signal
+	*connect { |from, connection, to|
+		Ndef(to.asSymbol).set(connection.asSymbol, Ndef(from.asSymbol));
 	}
 }
