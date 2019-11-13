@@ -1,6 +1,7 @@
 Suckless {
 	classvar moduledefs;
 	classvar <> modules;
+	classvar preprocessor;
 
 	///
 	*boot { arg scopeStyle = 2, server = Server.default;
@@ -22,39 +23,24 @@ Suckless {
 	*start {
 		Suckless.initModuleDefs();
 		Suckless.moduleDefNames.collect(_.postln);
-		// "Suckless: Initializing pre-processor... ".post;
-		// thisProcess.interpreter.preProcessor = { |codeBlock|
-		// 	codeBlock.split($\n).collect { |code|
-		// 		var items = code.split($ );
-		// 		items.postln;
-		// 		case
-		// 		{code.beginsWith("add")} {
-		// 			moduledefs.at(items[2].asSymbol).asCompileString.postln;
-		// 			moduledefs.at(items[2].asSymbol).asCompileString;
-		// 			"Ndef(\\"++items[1]++", "++moduledefs.at(items[2].asSymbol).asCompileString++");";
-		// 		}
-		// 		{code.beginsWith("play")} {
-		// 			"Ndef(\\"++items[1]++").play;";
-		// 		}
-		// 		{code.beginsWith("stop")} {
-		// 			"Ndef(\\"++items[1]++").stop;";
-		// 		}
-		// 		{code.beginsWith("clear")} {
-		// 			"Ndef(\\"++items[1]++").clear;";
-		// 		}
-		// 		{true} {
-		// 			var name = items[0];
-		// 			var param = items[1];
-		// 			var value = if ("[a-zA-Z]".matchRegexp(items[2])) {
-		// 				"Ndef(\\"++items[2]++")";
-		// 			} {
-		// 				items[2].asFloat
-		// 			};
-		// 			"Ndef(\\"++name++").set(\\"++param++", "++value++");";
-		// 		};
-		// 	}
-		// 	.join;
-		// };
+		Suckless.initPreProcessor();
+	}
+
+	*initPreProcessor {
+		"Suckless: Initializing pre-processor... ".post;
+		preprocessor = true;
+		thisProcess.interpreter.preProcessor = { |codeBlock|
+			// if preprocessor is "on" parse the code
+			if( preprocessor == true ) {
+				if (codeBlock == "quit") {
+					preprocessor = false
+				} {
+					SucklessPreProcessor.parse(codeBlock);
+				}
+			} { // pass it along otherwise
+				codeBlock;
+			}
+		};
 		"Done".postln;
 	}
 
@@ -123,7 +109,7 @@ Suckless {
 		if (definition.class == Function) {
 			Suckless.addModuleDef(name, definition);
 		} {
-			^Suckless.addNodeProxy(name, definition);
+			^Suckless.addNodeProxy(name, definition.asSymbol);
 		}
 	}
 
@@ -184,14 +170,111 @@ Suckless {
 	///
 	/// \returns Prints a list of inputs with rate, name and value.
 	*controls { |module|
-		"Controls for: "++module.postln;
-		Ndef(module.asSymbol).controlNames.do{ |ctl|
+		// "%'s  controls:".format(module).postln;
+		var controls = ();
+		Ndef(module.asSymbol).controlNames.do{ |ctl, i|
 			var name = ctl.name;
 			var value = ctl.defaultValue;
 			var rate = ctl.rate;
 			// find all characters between single quotes in Ndef('...')
 			if (value.class == Ndef) { value = value.asString.split($')[1] };
-			[rate, name, value].postln;
+			controls.put(i, [rate, name, value]);
+			// [ctl, i].postln;
+			// [rate, name, value].postln;
 		};
+		^controls;
+	}
+}
+
+Module {
+	var <> name;
+	var <> definition;
+	var <> description;
+
+	*new { |name, funcOrSymbol, description = ""|
+		Suckless.add(name, funcOrSymbol);
+		^super.newCopyArgs(name, funcOrSymbol, description);
+	}
+
+	controls {
+		"% - %".format(name, definition);
+		Suckless.controls(name);
+	}
+
+	connect { |inputname, from|
+		if (from.class == String) {from = Ndef(from)};
+		Suckless.connect(from.name, inputname, name);
+	}
+
+	disconnect { |inputname|
+		Suckless.disconnect(name, inputname);
+	}
+
+	play {
+		Suckless.play(name);
+	}
+
+	// printOn { | stream |
+	// 	stream << "%'s  controls:\n".format(name) << Suckless.controls(name).asString;
+	// }
+
+	// > {  |that|
+	// 	^"% > %".format(this, that);
+	// }
+}
+
+SucklessPreProcessor {
+
+	/// \brief Parses a block of Suckless code into valid Supercollider code
+	*parse { |code|
+		code.split($\n).collect { |line|
+			SucklessPreProcessor.parseLine(line);
+		}
+	}
+
+	/// \brief Parses a line of Suckless code into valid Supercollider code
+	*parseLine { |code|
+		// code.split($ ).collect { |items|
+		// 	items.postln;
+		// }
+		case
+		{code.contains(">")} { SucklessPreProcessor.connect(code.split($>)) }
+		{code.contains("=")} { SucklessPreProcessor.set(code.split($=)) }
+		{code.contains(".").not} { Suckless.controls(code) };
+
+	}
+
+	*connect { |items|
+		items.do { |item|
+			var from = items[0].asSymbol;
+			var to = items[1].split($.)[0].asSymbol;
+			var param = if(items[1].split($.).size > 1) {items[1].split($.)[0].asSymbol;} {\in};
+			// Suckless.connect(from, param, to);
+			Ndef(to).set(param, from);
+		}
+	}
+
+	*set { |items|
+		if (items[0].contains(".")) {
+			SucklessPreProcessor.setParam(items);
+		} {
+			SucklessPreProcessor.add(items);
+		};
+	}
+
+	*setParam { |items|
+		var module = items[0].asSymbol;
+		var param = if(items[0].split($.).size > 1) {items[1].split($.)[0].asSymbol;};
+		var value = items[1];
+		"set param".postln;
+		Suckless.connect(module, param, value);
+		// Ndef(module).set(param, value);
+	}
+
+	*add { |items|
+		var module = items[0].asSymbol;
+		var def = items[1];
+		"add".postln;
+		Suckless.add(module, def);
 	}
 }
